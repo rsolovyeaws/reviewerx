@@ -1,0 +1,152 @@
+{% extends "reviewerx/layout.html" %}
+{% load static %}
+
+{% block body %}
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-sm-4">
+                {% for photo in business.photos.all %}
+                    {% if photo.is_primary %}
+                        <img src="{{ photo.photo.url }}" class="col-sm-8"  style="border: white 1px solid;  border-radius: 40px;" alt="{{ business }} Main Photo"><br>
+                    {% endif %}
+                {% endfor %}
+                {% if user.is_authenticated and not business.user_id == user %}
+                    <a class="add-review-link" href="{% url 'add_review' business.id %}">Add Review</a>
+                {% endif %}
+
+                {% if user.is_authenticated and  business.user_id == user %}
+                    <a class="add-review-link" href="{% url 'update_business' business.id %}">Edit</a>
+                {% endif %}
+            </div> 
+
+            <div class="col-sm-8">
+                <span class="card-title"><b>{{ business.name }}</b></span>
+                <span class="number-rating">{{business.average_rating}}</span>
+                <span class="star-rating" data-rating="{{business.average_rating}}"></span>
+                <span class="review-count">({{business.reviews.count}})</span>
+                
+                <small class="card-stats">    
+                    <div>{{ business.type }}</div>
+                </small>
+                <small class="card-location">
+                    {{ business.street }}, {{ business.city }}, {{ business.country }}
+                </small>
+
+                <p class="card-text">{{ business.description }}</p>
+                <div class="container mt-2">
+                    <div class="row">
+                        {% for photo in business.photos.all %}
+                            {% if not photo.is_primary %}
+                                <img src="{{ photo.photo.url }}" class="col-sm-3 mt-2"  style="border: white 1px solid;  border-radius: 40px;" alt="photo-{{photo.id}}">
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div> <!-- col-sm-8 -->    
+        </div><!-- row -->
+    </div>
+    
+<hr>
+
+<!-- Container for All reviews for the business -->
+<div class="container mt-2">
+    {% for review in business.reviews.all %}
+        <!-- Container for review with comments -->
+        <div class="container mt-2">
+            <div class="row" style="background-color: lightgray; border: white 1px solid;  border-radius: 30px;">  
+                <div class="col-sm-1">
+                    <img src="{{ review.user_id.photo.url }}" style="max-width: 16px;">{{ review.user_id }}
+                    <div class="review-date">
+                        {% if review.updated_at %}
+                            <small>{{ review.updated_at|date:"SHORT_DATE_FORMAT"  }}</small><br>
+                        {% else %}
+                            <small>{{ review.created_at|date:"SHORT_DATE_FORMAT"  }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="review-rating"><b>Rating: </b>{{ review.rating }} </div>
+                    <!-- Review Likes -->
+                    <div class="review-likes">
+                        <p class="like-count-container">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-heart 
+                            {% if request.user.is_authenticated %} review-like {% endif %}" viewBox="0 0 16 16" data-reviewid="{{ review.id }}">
+                            <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z"/>
+                            </svg>
+                            <strong class="review-like-count" id="review-like-count-id-{{ review.id }}"> 
+                                {{ review.likes.all.count }} 
+                            </strong>
+                        </p>
+                    </div>
+                    <!-- Edit Review -->
+                    {% if user.is_authenticated and  review.user_id == user %}
+                        <a class="" href="{% url 'update_review' review.id %}">Edit</a><br>
+                        <a class="" href="{% url 'delete_review' review.id %}">Delete</a>
+                    {% endif %}
+
+                    {% if user.is_authenticated %}
+                        <div class="comment-button">
+                            <a class="add-comment-link" href="{% url 'add_comment' review.id %}">Add Comment</a>
+                        </div>
+                    {% endif %}
+                </div>
+
+
+                <div class="col-sm-8">
+                    <span class="card-title"><b>{{ review.title }}</b></span>
+                    <p>{{ review.text }}</p>
+                    <div class="container mt-2">
+                        <div class="row">
+                            {% for photo in review.photos.all %}
+                                <img src="{{ photo.photo.url }}" class="col-sm-3"  style="border: lightgray 1px solid;  border-radius: 40px;" alt="review-photo-{{photo.id}}">
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <!-- Comments -->
+                    <div class="container mt-2">
+                        {% for comment in review.comments.all %}
+                        <div class="container mt-2 mb-2">
+                            <div class="row" style="background-color: lightgoldenrodyellow; border-radius: 30px;">
+                                <div class="col-sm-2">
+                                        <img src="{{ comment.user_id.photo.url }}" class="user-avatar" style="max-width: 16px;">{{ comment.user_id }} 
+                                        {% if review.updated_at %}
+                                            <small>{{ comment.updated_at|date:"SHORT_DATE_FORMAT" }}</small><br>
+                                        {% else %}
+                                            <small>{{ comment.created_at|date:"SHORT_DATE_FORMAT" }}</small>
+                                        {% endif %}
+                                    <!-- Comment Likes -->
+                                    <div class="review-likes">
+                                        <p class="like-count-container">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-heart 
+                                            {% if request.user.is_authenticated %} comment-like {% endif %}" viewBox="0 0 16 16" data-commentid="{{ comment.id }}">
+                                            <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z"/>
+                                            </svg>
+                                            <strong class="comment-like-count" id="comment-like-count-id-{{ comment.id }}"> 
+                                                {{ comment.likes.all.count }} 
+                                            </strong>
+                                        </p>
+                                    </div>
+                                    <div>
+                                        {% if user.is_authenticated and  comment.user_id == user %}
+                                            <a class="" href="{% url 'update_comment' comment.id %}">Edit</a><br>
+                                            <a class="" href="{% url 'delete_comment' comment.id %}">Delete</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-sm-8">
+                                    <p>{{ comment.text }}</p>
+                                </div>
+                            </div>        
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+
+{% endblock %}
+
+{% block script %}
+    <script type="text/babel" src="{% static 'reviewerx/reviewerx.js' %}"></script>
+{% endblock %}

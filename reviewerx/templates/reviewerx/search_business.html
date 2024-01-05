@@ -1,0 +1,46 @@
+{% extends "reviewerx/layout.html" %}
+{% load static %}
+
+{% block body %}
+<!-- Display businesses with their associated locations and photos -->
+
+{% for business in businesses %}
+<div class="container mt-5">
+    <div class="row">
+        {% for photo in business.photos.all %}
+            {% if photo.is_primary %}
+                <img src="{{ photo.photo.url }}" class="col-sm-4 rounded-lg" style="border: white 1px solid;  border-radius: 40px;" alt="{{ business }} Main Photo">
+            {% endif %}
+        {% endfor %}
+        <div class="col-sm-8">
+            <div class="text-section">
+                <span class="card-title"><b>{{ business.name }}</b> </span>
+                <span class="number-rating">{{business.average_rating}}</span>
+                <span class="star-rating" data-rating="{{business.average_rating}}"></span>
+                <span class="review-count">({{business.reviews.count}})</span>
+                <div>
+                    <span class="business-type"><small>{{ business.type }}</small></span>
+                </div>
+                <div>
+                    <small class="card-location">
+                        {{ business.street }}, {{ business.city }}, {{ business.country }}
+                    </small>
+                </div>
+                <p class="card-text">{{ business.description|truncatechars:300 }}</p>
+
+            </div>
+            <a href="{% url 'business_detail' business.id %}" class="btn btn-primary">See Reviews</a>
+                
+        </div>
+    </div>
+</div>
+
+{% endfor %}
+
+{% include 'reviewerx/businesses_pagination.html' %}
+
+{% endblock %}
+
+{% block script %}
+    <script type="text/babel" src="{% static 'reviewerx/reviewerx.js' %}"></script>
+{% endblock %}

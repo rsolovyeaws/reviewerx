@@ -1,0 +1,17 @@
+<nav aria-label="Page navigation" class="">
+    <ul class="pagination justify-content-left">
+    {% if businesses.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page=1">&laquo First</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ businesses.previous_page_number }}">Previous</a></li>    
+    {% endif %}
+    
+    {% for i in nums %}
+        <li class="page-item"><a class="page-link" href="?page={{ forloop.counter }}">{{ forloop.counter }}</a></li>
+    {% endfor %}
+    
+    {% if businesses.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ businesses.next_page_number }}">Next</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ businesses.paginator.num_pages }}">Last &raquo</a></li>
+    {% endif %}
+    </ul>
+</nav>
